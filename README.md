@@ -8,11 +8,11 @@ Reads a file and outputs it like a verbatim environment. And so on.
 
 ``\keyin*<文字列>`` キーボードからの文字列を記述し、最後にEnterキー
 
-``\yenverb`` ``\verb``とほぼ同じだが、``\``が``\textyen``になる。
+``\yenverb`` ``\verb``とほぼ同じだが、``\``が``\textyen``になる
 
 ``\verbinput[オプション]<ファイル名>``
 
-ファイルを読み、verbatim風に出力する
+ファイルを読み、verbatim風に出力する。
    
 オプション
 -   ``bstoyen``  --  ``\`` を、``\textyen``にする。
