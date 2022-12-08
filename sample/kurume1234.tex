@@ -1,0 +1,20 @@
+\catcode`@=11
+\def\@has@one#11#2@{\ifx @#2@0\else1\fi}
+\def\@has@two#12#2@{\ifx @#2@0\else1\fi}
+\def\@has@three#13#2@{\ifx @#2@0\else1\fi}
+\def\@has@carry#1@{%
+  \ifnum\@has@one#11@\@has@two#12@\@has@three#13@>0 0\else1\fi}%
+  \def\inc#1{\ifnum\@has@carry#1@>0 1\fi\@inc#1@}
+\def\@inc#1@{\ifx @#1@\else\@@inc#1@\fi}
+\def\@@inc#1#2@{%
+  \ifnum\@has@carry#2@>0
+    \ifnum#1>3 1\@inc#2@\else \the\numexpr#1+1\relax\@inc#2@\fi
+  \else #1\@inc#2@\fi}
+\catcode`@=12
+\def\kurumeseq{}\newcount\kurumecnt\kurumecnt=0
+\loop
+  \advance\kurumecnt1
+  \edef\kurumeseq{\expandafter\inc\expandafter{\kurumeseq}}
+  \the\kurumecnt\ \kurumeseq\endgraf
+\ifnum\kurumecnt<10000000 \repeat
+\bye
