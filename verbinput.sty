@@ -1,0 +1,132 @@
+%%
+%% verbinput.sty
+%%
+%% Copyright (c) 2022 shihashi
+%%
+%% Released under the MIT license.
+%% see https://opensource.org/licenses/mit-license.php
+%%
+%% \lpath<文字列> パス名の文字列を記述
+%% \keyin<文字列> キーボードからの文字列を記述
+%% \keyin*<文字列> キーボードからの文字列を記述し、最後にEnterキー
+%% \yenverb \verbとほぼ同じだが、\が\textyenになる。
+%% \verbinput[オプション]<ファイル名>
+%%   ファイルを読み、verbatim風に出力する
+%%   オプション
+%%     bstoyen  --  \ を、\textyen にする。
+%%     visivlespace  --  空白文字を \textvisiblespace にする。
+%%     linenumber  --  行番号を付加する。
+%%
+\def\verbinput{%
+  \begingroup
+  \@vobeyspaces \frenchspacing
+  \trivlist\item\relax
+  \if@minipage\else\vskip\parskip\fi
+  \leftskip\@totalleftmargin \rightskip\z@skip
+  \parindent\z@\parfillskip\@flushglue\parfillskip\z@skip
+  \kanjiskip\z@\noautoxspacing
+  \@verb@input@checkoption}
+\def\@verb@input@checkoption{\@testopt\@@verb@input@checkopt{}}
+\def\@@verb@input@checkopt[#1]{%
+  \let\@verblf\@verb@@par
+  \let\@verbfirst\relax
+  \let\@dospecials@verb\@dospecials@verbinput
+  \@for\@tempa:=#1\do{\@nameuse{@verb@input@opt@\@tempa}}%
+  \@@verb@input@@}
+\def\@@verb@input@@#1{%
+  \let\do\@makeother \dospecials
+  \myverbatim@font\@noligs
+  \@vobeyspaces \frenchspacing
+  \@verbsp@opt
+  \@verbbs@opt
+  \@lf@to@verblf
+  {\small\baselineskip10\p@
+    \lineskiplimit\p@
+    \lineskip\p@
+    \@verbfirst\input{#1}%
+    \endtrivlist}
+  \endgroup}
+\def\@verb@input@opt@linenumber{%
+  \@verb@linenum\@ne
+  \let\@verbfirst\@verb@the@linenum
+  \def\@verblf{\@verb@@par\@verb@the@linenum}}
+\def\@verb@input@opt@visiblespace{\def\@verbsp@opt{\catcode`\ 12\relax}}
+\def\@verb@input@opt@bstoyen{\let\@verbbs@opt\@@bstoyen}
+\newcount\@verb@linenum
+\def\@verb@the@linenum{%
+  \leavevmode\hb@xt@2em{\hss{\rmfamily\the\@verb@linenum:}}\kern 1em
+  \advance\@verb@linenum\@ne\relax}
+\def\@verb@@par{\leavevmode\null\par\penalty\interlinepenalty\relax}
+%% \@lf@to@verblf
+%% カテゴリコードの変更
+%%  ^^M → 13
+%%  ^^M → \@verblf
+\begingroup
+\catcode`\^^M=\active%
+\global\def\@lf@to@verblf{%
+  \catcode`\^^M=\active%
+  \def^^M{\@verblf}}%
+\endgroup%
+%%
+%%
+\let\@verblf\@verb@@par
+\let\@verbsp@opt\relax
+\let\@verbbs@opt\relax
+\let\@verb@braces\relax
+\let\@myverb@text\relax
+\def\myverbatim@font{\normalfont\gtfamily\ttfamily}
+\let\myverb@balance@group\@empty
+\def\myverb@egroup{\global\let\myverb@balance@group\@empty\egroup}
+\begingroup
+  \obeylines%
+    \gdef\myverb@eol@error{\obeylines%
+      \def^^M{\myverb@egroup\@latex@error{%
+              \noexpand\verb-like macro ended by end of line}\@ehc}}%
+\endgroup
+\def\brace@to@normal{%
+  \catcode`\{=1 \catcode`\}=2}
+\begingroup
+  \catcode`\|=\z@
+  \catcode`\\=\active
+  |global|def|@@bstoyen{%
+    |catcode`|\=|active
+    |def\{|textyen}}%
+|endgroup%
+\def\lpath{%
+  \bgroup
+    \let\@myverb@text\relax
+    \let\@verb@braces\brace@to@normal
+    \let\@my@yenverb@next\@braced@verb
+    \def\@verbsp@opt{}
+    \@my@yenverb}
+\def\keyin{%
+  \bgroup
+    \let\@verb@braces\brace@to@normal
+    \let\@my@yenverb@next\@braced@verb
+    \def\@verbsp@opt{\catcode`\ 12\relax}
+    \@ifstar{\@keyin@star}{\@keyin}}
+\def\@keyin@star{%
+  \def\@myverb@text##1{\underline{##1\enterkey}}\@my@yenverb}
+\def\@keyin{%
+  \let\@myverb@text\underline\@my@yenverb}
+\def\yenverb{%
+  \bgroup
+    \let\@verb@braces\relax
+    \let\@my@yenverb@next\@nobraced@verb
+    \@my@yenverb}
+\def\@my@yenverb{\relax\ifmmode\hbox\else\leavevmode\null\fi
+  \myverb@eol@error \let\do\@makeother \dospecials
+  \myverbatim@font\@noligs
+  \@verb@braces
+  \@@bstoyen
+  \@vobeyspaces \frenchspacing \@verbsp@opt
+  \@my@yenverb@next}
+\def\@braced@verb#1{\@myverb@text{#1}\egroup}
+\def\@nobraced@verb#1{%
+  \catcode`#1\active
+  \lccode`\~`#1%
+  \gdef\myverb@balance@group{\myverb@egroup
+     \@latex@error{\noexpand\verb-like macro
+                   illegal in command argument}\@ehc}%
+  \aftergroup\myverb@balance@group
+  \lowercase{\let~\myverb@egroup}}%
